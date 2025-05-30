@@ -16,6 +16,7 @@ import logging
 import os
 import tempfile
 import time
+import shutil
 
 LOGGING_FORMAT = (
     '%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
@@ -64,9 +65,10 @@ def log_to_tmp_folder(
   print(f'Log setup complete: {log_filepath}')
 
   latest_log_link = os.path.join(log_dir, f'{log_file_prefix}.latest.log')
-  if os.path.islink(latest_log_link):
-    os.unlink(latest_log_link)
-  os.symlink(log_filepath, latest_log_link)
+  try:
+    shutil.copy2(log_filepath, latest_log_link)
+  except Exception as e:
+    logging.getLogger(__name__).error(f"Failed to update latest log link: {e}")
 
   print(f'To access latest log: tail -F {latest_log_link}')
   return log_filepath
